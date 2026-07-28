@@ -1,0 +1,42 @@
+# ── Python ──────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+.pytest_cache/
+.mypy_cache/
+*.egg
+
+# Python build artifacts (the sdist/wheel output dir).
+# NOTE: this is the top-level /build and /dist — NOT reticus/dashboard/dist.
+/build/
+/dist/
+/wheelhouse/
+
+# ── Virtualenvs ─────────────────────────────────────────────────────────
+.venv/
+venv/
+env/
+
+# ── Frontend (node) ─────────────────────────────────────────────────────
+frontend/node_modules/
+frontend/.vite/
+frontend/dist/
+
+# IMPORTANT: reticus/dashboard/dist/ is the PRE-BUILT frontend that ships
+# inside the package. It MUST stay tracked so `pip install git+...` serves
+# the dashboard. Do not ignore it.
+!reticus/dashboard/dist/
+!reticus/dashboard/dist/**
+
+# ── Reticus runtime data (created by user runs) ─────────────────────────
+.reticus/
+
+# ── Editors / OS ────────────────────────────────────────────────────────
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# ── Claude Code local session config ───────────────────────────────────
+.claude/

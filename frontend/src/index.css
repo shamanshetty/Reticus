@@ -1,0 +1,250 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+  Reticus design tokens.
+  Palette of intent — every color earns its place:
+    Prussian Blue  #003153  the vault / foundation (brand, header, primary)
+    Amber Gold     #FFB703  the diagnostic spark (alerts, CTAs, thresholds)
+    Verdigris Teal #40B5AD  transparent flow (healthy metrics, links)
+    Emerald        #50C878  fix applied / healthy growth
+    Crimson        #DC143C  diagnostic flag / error
+    Slate Gray     #708090  unseen scaffolding (borders, grid, secondary text)
+    Charcoal       #1E1E1E  dark canvas
+    Paper          #F5F5F0  light canvas
+  Restraint over decoration. No neon, no gradient theatrics.
+*/
+
+@layer base {
+  :root {
+    /* ── DARK (default) — Slate canvas (cool blue-grey, not flat black) ─ */
+    --background: 220 16% 11%;          /* #181b20 deep slate */
+    --background-2: 222 17% 9%;         /* #131519 */
+    --foreground: 210 20% 94%;          /* cool off-white */
+    --card: 219 15% 14%;               /* #1e222a */
+    --card-elevated: 218 14% 18%;      /* #272c35 */
+    --card-foreground: 210 20% 94%;
+    --popover: 219 15% 15%;
+    --popover-foreground: 210 20% 94%;
+
+    /* Prussian blue — brand / structural primary. Lifted for contrast on charcoal. */
+    --primary: 203 90% 24%;            /* lifted Prussian for legibility */
+    --primary-deep: 205 100% 16%;      /* true #003153 — header/brand fills */
+    --primary-foreground: 0 0% 100%;
+
+    --amber: 43 100% 51%;              /* #FFB703 */
+    --teal: 176 48% 48%;               /* #40B5AD */
+    --emerald: 145 50% 55%;            /* #50C878 */
+    --crimson: 348 83% 47%;            /* #DC143C */
+    --slate: 210 13% 50%;              /* #708090 */
+
+    /* Semantic */
+    --accent: 43 100% 51%;             /* amber = the spark / CTA */
+    --accent-foreground: 0 0% 12%;
+    --success: 145 50% 55%;            /* emerald */
+    --warning: 43 100% 51%;            /* amber */
+    --destructive: 348 83% 47%;        /* crimson */
+    --destructive-foreground: 0 0% 100%;
+
+    --secondary: 218 14% 20%;
+    --secondary-foreground: 210 16% 84%;
+    --muted: 218 14% 20%;
+    --muted-foreground: 215 14% 65%;   /* slate, lightened for dark */
+
+    --border: 215 16% 55%;             /* slate, used with alpha */
+    --border-alpha: 138 148 166;       /* cool slate rgb for rgba() borders */
+    --input: 218 14% 24%;
+    --ring: 176 48% 48%;               /* teal focus */
+
+    --radius: 0.875rem;                /* 14px — composed, not flashy */
+    --radius-sm: 0.625rem;             /* 10px */
+    --radius-lg: 1.125rem;             /* 18px */
+
+    /* Refined, quiet elevation — no glow */
+    --shadow-card: 0 1px 2px rgba(0,0,0,0.30), 0 4px 14px -6px rgba(0,0,0,0.45);
+    --shadow-float: 0 2px 4px rgba(0,0,0,0.35), 0 14px 32px -12px rgba(0,0,0,0.55);
+    --shadow-glow: 0 1px 2px rgba(0,0,0,0.30), 0 8px 20px -8px rgba(0,0,0,0.5);
+
+    color-scheme: dark;
+  }
+
+  .light {
+    /* ── LIGHT — Warm paper canvas ──────────────────────────────────── */
+    --background: 48 30% 97%;          /* #faf8f2 warm paper */
+    --background-2: 48 24% 94%;        /* #f1efe7 */
+    --foreground: 215 30% 16%;         /* slate ink */
+    --card: 45 33% 99%;                /* near-white, warm */
+    --card-elevated: 0 0% 100%;
+    --card-foreground: 205 45% 12%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 205 45% 12%;
+
+    --primary: 205 100% 16%;           /* true Prussian #003153 */
+    --primary-deep: 205 100% 16%;
+    --primary-foreground: 0 0% 100%;
+
+    --amber: 43 96% 47%;
+    --teal: 176 52% 40%;
+    --emerald: 145 55% 42%;
+    --crimson: 348 80% 45%;
+    --slate: 210 13% 42%;
+
+    --accent: 43 96% 47%;
+    --accent-foreground: 205 45% 12%;
+    --success: 145 55% 38%;
+    --warning: 38 92% 42%;
+    --destructive: 348 80% 45%;
+    --destructive-foreground: 0 0% 100%;
+
+    --secondary: 60 12% 90%;
+    --secondary-foreground: 205 30% 25%;
+    --muted: 60 12% 90%;
+    --muted-foreground: 210 13% 40%;   /* slate */
+
+    --border: 210 14% 30%;
+    --border-alpha: 112 128 144;       /* slate */
+    --input: 210 14% 82%;
+    --ring: 176 52% 40%;
+
+    --shadow-card: 0 1px 2px rgba(28,35,48,0.05), 0 6px 18px -10px rgba(28,35,48,0.14);
+    --shadow-float: 0 2px 5px rgba(28,35,48,0.07), 0 16px 36px -14px rgba(28,35,48,0.18);
+    --shadow-glow: 0 1px 2px rgba(28,35,48,0.05), 0 10px 24px -10px rgba(28,35,48,0.14);
+
+    color-scheme: light;
+  }
+}
+
+@layer base {
+  * {
+    border-color: rgba(var(--border-alpha) / 0.14);
+  }
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11', 'ss01';
+  }
+  /* Space Grotesk for display / headings — gives the engineering-tool register */
+  h1, h2, h3, .font-display {
+    font-family: 'Space Grotesk', 'Inter', ui-sans-serif, system-ui, sans-serif;
+    letter-spacing: -0.01em;
+  }
+  /* mono for code / data — engineering register */
+  code, pre, .font-mono { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace; }
+
+  ::-webkit-scrollbar { width: 11px; height: 11px; }
+  ::-webkit-scrollbar-thumb {
+    background: rgba(var(--border-alpha) / 0.28);
+    border-radius: 8px;
+    border: 3px solid transparent;
+    background-clip: content-box;
+  }
+  ::-webkit-scrollbar-thumb:hover { background: rgba(var(--border-alpha) / 0.42); background-clip: content-box; }
+  ::-webkit-scrollbar-track { background: transparent; }
+}
+
+@layer components {
+  /* Composed card — glass over the aurora, layered depth, hairline highlight.
+     A top inner highlight + soft drop shadow give it a lifted, 3D feel without
+     per-pointer JS. Applies app-wide, so every page reads premium. */
+  .reticus-card {
+    position: relative;
+    border-radius: var(--radius);
+    border: 1px solid rgba(var(--border-alpha) / 0.16);
+    background:
+      linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0) 40%),
+      hsl(var(--card) / 0.78);
+    backdrop-filter: blur(14px) saturate(1.1);
+    -webkit-backdrop-filter: blur(14px) saturate(1.1);
+    box-shadow:
+      0 1px 0 0 rgba(255,255,255,0.05) inset,
+      0 1px 2px rgba(0,0,0,0.30),
+      0 12px 32px -14px rgba(0,0,0,0.55);
+  }
+  /* Hairline top edge highlight — the "rim light" that sells the depth. */
+  .reticus-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(180deg, rgba(64,181,173,0.25), rgba(255,255,255,0) 35%);
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+    opacity: 0.7;
+  }
+  .light .reticus-card {
+    background:
+      linear-gradient(180deg, rgba(255,255,255,0.6), rgba(255,255,255,0) 40%),
+      hsl(var(--card) / 0.82);
+    box-shadow:
+      0 1px 0 0 rgba(255,255,255,0.7) inset,
+      0 1px 2px rgba(28,35,48,0.06),
+      0 14px 34px -16px rgba(28,35,48,0.20);
+  }
+  .reticus-card-hover {
+    transition: transform 220ms cubic-bezier(0.22,1,0.36,1), box-shadow 220ms ease, border-color 220ms ease;
+  }
+  .reticus-card-hover:hover {
+    transform: translateY(-3px);
+    box-shadow:
+      0 1px 0 0 rgba(255,255,255,0.06) inset,
+      0 2px 6px rgba(0,0,0,0.35),
+      0 22px 48px -18px rgba(0,0,0,0.6);
+    border-color: rgba(64,181,173,0.30);
+  }
+
+  .reticus-label {
+    @apply text-[11px] font-semibold uppercase tracking-[0.09em] text-muted-foreground;
+  }
+
+  .reticus-chip {
+    display: inline-flex; align-items: center; gap: 0.375rem;
+    border-radius: 9999px;
+    border: 1px solid rgba(var(--border-alpha) / 0.16);
+    background: hsl(var(--card-elevated));
+    padding: 0.25rem 0.75rem;
+    font-size: 0.75rem; font-weight: 500;
+    color: hsl(var(--foreground));
+  }
+
+  .page-header-eyebrow {
+    @apply text-[11px] font-semibold uppercase tracking-[0.16em];
+    color: hsl(var(--teal));
+  }
+  .page-header-title {
+    @apply mt-1 text-[26px] font-semibold leading-tight tracking-tight;
+    font-family: 'Space Grotesk', 'Inter', sans-serif;
+    background: linear-gradient(100deg, hsl(var(--foreground)) 0%, hsl(var(--teal)) 55%, hsl(var(--foreground)) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+}
+
+@layer utilities {
+  .shadow-float { box-shadow: var(--shadow-float); }
+  .shadow-glow { box-shadow: var(--shadow-glow); }
+  .border-soft { border-color: rgba(var(--border-alpha) / 0.14); }
+  .text-teal { color: hsl(var(--teal)); }
+  .text-amber { color: hsl(var(--amber)); }
+  .text-emerald { color: hsl(var(--emerald)); }
+  .text-crimson { color: hsl(var(--destructive)); }
+  .bg-prussian { background: hsl(var(--primary-deep)); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+  .reticus-card-hover:hover { transform: none; }
+}
+
+.js-plotly-plot .plotly .modebar { display: none !important; }

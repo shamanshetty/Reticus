@@ -1,0 +1,505 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reticus — local CV pipeline dashboard</title>
+<meta name="description" content="Reticus is a local, private dashboard for computer-vision training runs. Classification and object detection, zero network calls, no account. pip install and go.">
+<!--
+  ====================================================================
+  Before publishing: set your GitHub repo URL in one place below.
+  Search for  REPO_URL  and replace the placeholder.
+  Deploy: commit this file, then GitHub → Settings → Pages →
+  Source: "Deploy from a branch", branch = main, folder = /docs.
+  ====================================================================
+-->
+<style>
+  :root {
+    --bg: #181b20;
+    --bg-2: #131519;
+    --card: #1e222a;
+    --card-2: #21262f;
+    --fg: #e7ecf3;
+    --muted: #8a94a6;
+    --border: rgba(138,148,166,0.16);
+    --border-strong: rgba(138,148,166,0.30);
+    --teal: #40B5AD;
+    --amber: #FFB703;
+    --prussian: #003153;
+    --prussian-lift: #0a4d68;
+    --emerald: #50C878;
+    --crimson: #DC143C;
+    --slate: #708090;
+    --purple: #9B59B6;
+    --indigo: #5C6BC0;
+    --radius: 14px;
+    --radius-lg: 18px;
+    --maxw: 1080px;
+    --sans: 'Space Grotesk', 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
+    --body: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
+    --mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--fg);
+    font-family: var(--body);
+    font-size: 16px;
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+  h1, h2, h3, .display { font-family: var(--sans); letter-spacing: -0.01em; font-weight: 600; }
+  code, pre, .mono { font-family: var(--mono); }
+  a { color: inherit; text-decoration: none; }
+
+  /* ---- ambient aurora (teal + prussian wash), quiet and slow ---- */
+  .aurora {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden;
+  }
+  .aurora::before, .aurora::after {
+    content: ''; position: absolute; border-radius: 50%;
+    filter: blur(90px); opacity: 0.5;
+  }
+  .aurora::before {
+    width: 60vw; height: 60vw; left: -12vw; top: -18vw;
+    background: radial-gradient(circle at 50% 50%, var(--teal), transparent 62%);
+    animation: drift1 26s ease-in-out infinite alternate;
+  }
+  .aurora::after {
+    width: 55vw; height: 55vw; right: -14vw; top: 4vw;
+    background: radial-gradient(circle at 50% 50%, var(--prussian-lift), transparent 60%);
+    animation: drift2 30s ease-in-out infinite alternate;
+  }
+  /* vignette so edges settle and mid-screen stays lit */
+  .vignette {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background: linear-gradient(180deg, rgba(24,27,32,0.55) 0%, transparent 22%, transparent 70%, rgba(19,21,25,0.85) 100%);
+  }
+  @keyframes drift1 { from { transform: translate(0,0) scale(1); } to { transform: translate(6vw,4vw) scale(1.12); } }
+  @keyframes drift2 { from { transform: translate(0,0) scale(1.05); } to { transform: translate(-5vw,3vw) scale(0.95); } }
+
+  .wrap { position: relative; z-index: 1; max-width: var(--maxw); margin: 0 auto; padding: 0 24px; }
+
+  /* ---- top bar ---- */
+  header {
+    position: sticky; top: 0; z-index: 20;
+    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    background: rgba(24,27,32,0.55);
+    border-bottom: 1px solid var(--border);
+  }
+  .nav { display: flex; align-items: center; gap: 16px; height: 60px; }
+  .brand { display: inline-flex; align-items: center; gap: 10px; font-family: var(--sans); font-weight: 600; font-size: 18px; }
+  .brand .word {
+    background: linear-gradient(100deg, var(--fg) 0%, var(--teal) 55%, var(--fg) 100%);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .nav-links { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+  .nav-links a {
+    font-size: 13px; color: var(--muted); padding: 8px 12px; border-radius: 9px;
+    transition: color .18s ease, background .18s ease;
+  }
+  .nav-links a:hover { color: var(--fg); background: rgba(138,148,166,0.10); }
+  .nav-links a.gh { color: var(--fg); border: 1px solid var(--border-strong); }
+  .nav-links a.gh:hover { border-color: rgba(64,181,173,0.4); }
+
+  /* ---- hero ---- */
+  .hero { padding: 92px 0 40px; text-align: center; }
+  .eyebrow {
+    font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.16em;
+    color: var(--teal);
+  }
+  .hero h1 {
+    font-size: clamp(34px, 6vw, 56px); line-height: 1.04; margin: 14px auto 0; max-width: 15ch;
+    text-wrap: balance; font-weight: 600;
+  }
+  .hero h1 .grad {
+    background: linear-gradient(100deg, var(--teal) 0%, #7fd3cc 50%, var(--teal) 100%);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .hero p.sub {
+    margin: 18px auto 0; max-width: 56ch; color: var(--muted); font-size: 17px;
+  }
+  .install {
+    margin: 30px auto 0; max-width: 460px;
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    background: rgba(19,21,25,0.7); border: 1px solid var(--border);
+    border-radius: 12px; padding: 12px 14px 12px 18px;
+    font-family: var(--mono); font-size: 14.5px;
+  }
+  .install .cmd { color: var(--fg); }
+  .install .cmd .muted { color: var(--slate); }
+  .copy-btn {
+    font-family: var(--body); font-size: 12px; font-weight: 600; cursor: pointer;
+    background: rgba(64,181,173,0.12); color: var(--teal);
+    border: 1px solid rgba(64,181,173,0.28); border-radius: 8px; padding: 6px 12px;
+    transition: background .16s ease;
+  }
+  .copy-btn:hover { background: rgba(64,181,173,0.22); }
+  .cta-row { margin: 26px auto 0; display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-family: var(--sans); font-weight: 600; font-size: 14.5px;
+    padding: 12px 22px; border-radius: 11px; cursor: pointer; transition: transform .16s ease, box-shadow .16s ease, background .16s ease;
+  }
+  .btn-primary { background: var(--amber); color: #1a1400; }
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 26px -10px rgba(255,183,3,0.5); }
+  .btn-ghost { background: transparent; color: var(--fg); border: 1px solid var(--border-strong); }
+  .btn-ghost:hover { border-color: rgba(64,181,173,0.45); background: rgba(64,181,173,0.06); }
+
+  .badges { margin: 30px auto 0; display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+  .badge {
+    font-size: 12px; color: var(--muted);
+    border: 1px solid var(--border); border-radius: 9999px; padding: 5px 12px;
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .badge .dot { width: 6px; height: 6px; border-radius: 50%; }
+
+  /* ---- section scaffolding ---- */
+  section { position: relative; z-index: 1; padding: 56px 0; }
+  .section-head { max-width: 640px; }
+  .section-head h2 { font-size: clamp(24px, 3.4vw, 32px); }
+  .section-head p { margin-top: 10px; color: var(--muted); }
+
+  /* ---- pipeline stage cards (mirrors the dashboard) ---- */
+  .grid {
+    margin-top: 30px; display: grid; gap: 16px;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  }
+  .card {
+    position: relative; overflow: hidden;
+    background:
+      linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0) 42%),
+      rgba(30,34,42,0.72);
+    backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+    border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 20px;
+    transition: transform .2s cubic-bezier(.22,1,.36,1), border-color .2s ease, box-shadow .2s ease;
+  }
+  .card:hover {
+    transform: translateY(-3px);
+    border-color: rgba(64,181,173,0.28);
+    box-shadow: 0 22px 48px -20px rgba(0,0,0,0.6);
+  }
+  .card .rail { position: absolute; inset: 0 auto 0 0; width: 3px; }
+  .card .glyph { width: 26px; height: 26px; }
+  .card .tag { font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.14em; }
+  .card h3 { font-size: 19px; margin-top: 10px; }
+  .card p { margin-top: 6px; font-size: 13.5px; color: var(--muted); line-height: 1.55; }
+
+  /* ---- install / extras table ---- */
+  .split { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: start; }
+  @media (max-width: 760px) { .split { grid-template-columns: 1fr; gap: 30px; } }
+  .steps { display: flex; flex-direction: column; gap: 18px; }
+  .step { display: flex; gap: 14px; }
+  .step .num {
+    flex-shrink: 0; width: 26px; height: 26px; border-radius: 50%;
+    display: grid; place-items: center; font-size: 12px; font-weight: 600;
+    font-family: var(--mono); color: var(--teal); background: rgba(64,181,173,0.14);
+  }
+  .step h4 { font-size: 15px; font-family: var(--sans); }
+  .step p { font-size: 13.5px; color: var(--muted); margin-top: 2px; }
+  .step code { font-size: 12.5px; color: var(--teal); background: rgba(64,181,173,0.08); padding: 1px 6px; border-radius: 5px; }
+
+  pre.block {
+    background: rgba(19,21,25,0.8); border: 1px solid var(--border);
+    border-radius: 12px; padding: 16px 18px; overflow-x: auto;
+    font-family: var(--mono); font-size: 13px; line-height: 1.7; color: #cdd6e4;
+  }
+  pre.block .c { color: var(--slate); }
+  pre.block .k { color: var(--teal); }
+  pre.block .s { color: var(--emerald); }
+
+  table.extras { width: 100%; border-collapse: collapse; margin-top: 18px; font-size: 13.5px; }
+  table.extras th, table.extras td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--border); }
+  table.extras th { font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); font-weight: 600; }
+  table.extras td code { color: var(--teal); font-family: var(--mono); font-size: 12.5px; }
+
+  /* ---- privacy strip ---- */
+  .privacy {
+    display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; text-align: center;
+  }
+  .privacy .item { flex: 1 1 200px; max-width: 260px; }
+  .privacy .item .ic { color: var(--teal); }
+  .privacy .item h4 { font-size: 15px; margin-top: 10px; font-family: var(--sans); }
+  .privacy .item p { font-size: 13px; color: var(--muted); margin-top: 4px; }
+
+  /* ---- footer ---- */
+  footer {
+    position: relative; z-index: 1; border-top: 1px solid var(--border);
+    margin-top: 40px; padding: 32px 0 48px; color: var(--muted); font-size: 13px;
+  }
+  .foot { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+  .foot a { color: var(--muted); }
+  .foot a:hover { color: var(--teal); }
+  .foot .spacer { margin-left: auto; }
+
+  :focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; border-radius: 4px; }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation-duration: 0.001ms !important; scroll-behavior: auto; }
+    .btn:hover, .card:hover { transform: none; }
+  }
+</style>
+</head>
+<body>
+<div class="aurora"></div>
+<div class="vignette"></div>
+
+<!-- reusable logo mark (SVG) is inlined per use below -->
+
+<header>
+  <div class="wrap nav">
+    <span class="brand">
+      <svg width="28" height="28" viewBox="0 0 48 48" fill="none" role="img" aria-label="Reticus logo">
+        <g stroke="#40B5AD" stroke-opacity="0.45" stroke-width="1.1" stroke-linecap="round">
+          <line x1="24" y1="24" x2="24" y2="8"/><line x1="24" y1="24" x2="38" y2="16"/>
+          <line x1="24" y1="24" x2="38" y2="32"/><line x1="24" y1="24" x2="24" y2="40"/>
+          <line x1="24" y1="24" x2="10" y2="32"/><line x1="24" y1="24" x2="10" y2="16"/>
+          <line x1="24" y1="8" x2="38" y2="16"/><line x1="38" y1="16" x2="38" y2="32"/>
+          <line x1="38" y1="32" x2="24" y2="40"/><line x1="24" y1="40" x2="10" y2="32"/>
+          <line x1="10" y1="32" x2="10" y2="16"/><line x1="10" y1="16" x2="24" y2="8"/>
+        </g>
+        <circle cx="24" cy="24" r="3.2" fill="#40B5AD"/>
+        <circle cx="24" cy="8" r="2.2" fill="#181b20" stroke="#40B5AD" stroke-width="1.3"/>
+        <circle cx="38" cy="16" r="2.2" fill="#181b20" stroke="#40B5AD" stroke-width="1.3"/>
+        <circle cx="38" cy="32" r="2.2" fill="#181b20" stroke="#40B5AD" stroke-width="1.3"/>
+        <circle cx="24" cy="40" r="2.2" fill="#181b20" stroke="#40B5AD" stroke-width="1.3"/>
+        <circle cx="10" cy="32" r="2.2" fill="#181b20" stroke="#40B5AD" stroke-width="1.3"/>
+        <circle cx="10" cy="16" r="2.2" fill="#181b20" stroke="#40B5AD" stroke-width="1.3"/>
+      </svg>
+      <span class="word">Reticus</span>
+    </span>
+    <nav class="nav-links">
+      <a href="#pipeline">Pipeline</a>
+      <a href="#install">Install</a>
+      <a href="#privacy">Privacy</a>
+      <a class="gh" id="gh-nav" href="#" target="_blank" rel="noopener">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<div class="wrap">
+  <section class="hero">
+    <p class="eyebrow">Local CV pipeline dashboard</p>
+    <h1>Inspect every stage of your run with <span class="grad">Reticus</span></h1>
+    <p class="sub">
+      Dataset, training, results, inference — for image classification and object
+      detection, on one machine. No account, no cloud; your data never leaves the box.
+    </p>
+
+    <div class="install">
+      <span class="cmd" id="install-cmd">pip install <span class="muted">"reticus[all]"</span></span>
+      <button class="copy-btn" id="copy-btn" type="button" aria-label="Copy install command">Copy</button>
+    </div>
+
+    <div class="cta-row">
+      <a class="btn btn-primary" id="gh-cta" href="#" target="_blank" rel="noopener">
+        View on GitHub
+      </a>
+      <a class="btn btn-ghost" href="#install">Install instructions</a>
+    </div>
+
+    <div class="badges">
+      <span class="badge"><span class="dot" style="background:var(--teal)"></span> 100% local</span>
+      <span class="badge"><span class="dot" style="background:var(--emerald)"></span> Zero network calls</span>
+      <span class="badge"><span class="dot" style="background:var(--amber)"></span> Python 3.8+</span>
+      <span class="badge"><span class="dot" style="background:var(--slate)"></span> MIT licensed</span>
+    </div>
+  </section>
+</div>
+
+<div class="wrap">
+  <section id="pipeline">
+    <div class="section-head">
+      <p class="eyebrow">How it works</p>
+      <h2>One dashboard, every stage of the pipeline</h2>
+      <p>
+        Add a handful of calls to your existing training script. Reticus sits beside your
+        loop, reads values you already compute, and opens a live dashboard at
+        <code style="font-family:var(--mono);color:var(--teal)">127.0.0.1:8765</code>.
+        Each stage below is a page you can open.
+      </p>
+    </div>
+
+    <div class="grid" id="stage-grid"></div>
+  </section>
+</div>
+
+<div class="wrap">
+  <section id="install">
+    <div class="split">
+      <div>
+        <div class="section-head">
+          <p class="eyebrow">Get started</p>
+          <h2>Running in five minutes</h2>
+        </div>
+        <div class="steps" style="margin-top:26px">
+          <div class="step">
+            <span class="num">1</span>
+            <div>
+              <h4>Install</h4>
+              <p>Core is tiny (numpy + Pillow). Add <code>[all]</code> for the dashboard and Grad-CAM.</p>
+            </div>
+          </div>
+          <div class="step">
+            <span class="num">2</span>
+            <div>
+              <h4>Add a few calls to your training script</h4>
+              <p>Construct once, <code>start_run</code>, <code>log</code> each epoch, then <code>end_run</code>.</p>
+            </div>
+          </div>
+          <div class="step">
+            <span class="num">3</span>
+            <div>
+              <h4>Watch it live</h4>
+              <p>The dashboard opens automatically in your browser. Re-open later with <code>reticus &lt;project&gt;</code>.</p>
+            </div>
+          </div>
+        </div>
+
+        <table class="extras">
+          <thead><tr><th>Install</th><th>Adds</th><th>Use when</th></tr></thead>
+          <tbody>
+            <tr><td><code>reticus</code></td><td>numpy, Pillow</td><td>Headless logging, no UI</td></tr>
+            <tr><td><code>reticus[dashboard]</code></td><td>fastapi, uvicorn</td><td>The local web dashboard</td></tr>
+            <tr><td><code>reticus[torch]</code></td><td>torch, grad-cam</td><td>Grad-CAM heatmaps</td></tr>
+            <tr><td><code>reticus[all]</code></td><td>everything</td><td>One-shot full install</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div>
+<pre class="block"><span class="c"># train.py</span>
+<span class="k">from</span> reticus <span class="k">import</span> Reticus
+
+r = Reticus(<span class="s">"my_project"</span>)  <span class="c"># opens the dashboard</span>
+r.start_run(config={
+    <span class="s">"task"</span>: <span class="s">"classification"</span>,
+    <span class="s">"class_names"</span>: [<span class="s">"cat"</span>, <span class="s">"dog"</span>, <span class="s">"bird"</span>],
+})
+
+<span class="k">for</span> epoch <span class="k">in</span> range(<span class="s">1</span>, <span class="s">11</span>):
+    r.log({
+        <span class="s">"epoch"</span>: epoch,
+        <span class="s">"train_loss"</span>: train_loss,
+        <span class="s">"val_loss"</span>: val_loss,
+        <span class="s">"val_acc"</span>: val_acc,
+    }, total_epochs=<span class="s">10</span>)
+
+<span class="c"># after eval: per-class metrics, confusion matrix, ...</span>
+r.log_predictions(
+    images=val_images, class_names=CLASSES,
+    task=<span class="s">"classification"</span>, preds=preds, targets=targets,
+)
+r.end_run()</pre>
+        <p style="margin-top:14px;font-size:13px;color:var(--muted)">
+          Object detection works the same way — pass <code style="font-family:var(--mono);color:var(--teal)">task="od"</code>
+          with boxes in YOLO, COCO, VOC, or xyxy format.
+        </p>
+      </div>
+    </div>
+  </section>
+</div>
+
+<div class="wrap">
+  <section id="privacy">
+    <div class="section-head" style="max-width:640px;margin:0 auto;text-align:center">
+      <p class="eyebrow">Why local</p>
+      <h2>Your training data never leaves the machine</h2>
+    </div>
+    <div class="privacy" style="margin-top:34px">
+      <div class="item">
+        <svg class="ic" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        <h4>No cloud, no account</h4>
+        <p>The server binds to 127.0.0.1 only. No login, no telemetry, no external services.</p>
+      </div>
+      <div class="item">
+        <svg class="ic" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M18.36 6.64A9 9 0 1 1 5.64 6.64"/><line x1="12" y1="2" x2="12" y2="12"/></svg>
+        <h4>Zero network calls</h4>
+        <p>Charts, fonts, and reports are all bundled. Works fully offline, air-gapped if you need.</p>
+      </div>
+      <div class="item">
+        <svg class="ic" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+        <h4>CV-specific out of the box</h4>
+        <p>Box overlays, Grad-CAM, dataset health checks, and quality flags — not a generic logger.</p>
+      </div>
+    </div>
+  </section>
+</div>
+
+<footer>
+  <div class="wrap foot">
+    <span class="brand" style="font-size:15px">
+      <svg width="20" height="20" viewBox="0 0 48 48" fill="none" role="img" aria-label="Reticus">
+        <g stroke="#40B5AD" stroke-opacity="0.45" stroke-width="1.4" stroke-linecap="round">
+          <line x1="24" y1="24" x2="24" y2="8"/><line x1="24" y1="24" x2="38" y2="16"/>
+          <line x1="24" y1="24" x2="38" y2="32"/><line x1="24" y1="24" x2="24" y2="40"/>
+          <line x1="24" y1="24" x2="10" y2="32"/><line x1="24" y1="24" x2="10" y2="16"/>
+        </g>
+        <circle cx="24" cy="24" r="3.4" fill="#40B5AD"/>
+      </svg>
+      <span class="word">Reticus</span>
+    </span>
+    <span>MIT licensed</span>
+    <span class="spacer"></span>
+    <a id="gh-foot" href="#" target="_blank" rel="noopener">GitHub</a>
+    <a href="#install">Install</a>
+    <a href="#pipeline">Docs</a>
+  </div>
+</footer>
+
+<script>
+  // ====================================================================
+  //  Set your GitHub repository URL here (one place).
+  // ====================================================================
+  var REPO_URL = "https://github.com/shamanshetty/Reticus";
+
+  ["gh-nav", "gh-cta", "gh-foot"].forEach(function (id) {
+    var el = document.getElementById(id);
+    if (el) el.href = REPO_URL;
+  });
+
+  // Copy the install command
+  var copyBtn = document.getElementById("copy-btn");
+  if (copyBtn) {
+    copyBtn.addEventListener("click", function () {
+      var text = 'pip install "reticus[all]"';
+      var done = function () {
+        copyBtn.textContent = "Copied";
+        setTimeout(function () { copyBtn.textContent = "Copy"; }, 1600);
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(done, done);
+      } else { done(); }
+    });
+  }
+
+  // Pipeline stage cards — the real dashboard stages, colors, glyphs, blurbs.
+  var STAGES = [
+    { tag: "Stage 01", label: "Data", color: "#40B5AD", blurb: "Class balance, duplicates, corrupt images, per-class sample grid.", glyph: "M3 3v18h18 M7 16l4-5 3 3 5-7" },
+    { tag: "Stage 02", label: "Preprocessing", color: "#9B59B6", blurb: "Transform pipeline and before / after sample gallery.", glyph: "M4 7h10 M4 12h16 M4 17h10 M16 5l4 2-4 2 M6 15l-4 2 4 2" },
+    { tag: "Stage 03", label: "Training", color: "#50C878", blurb: "Live loss / accuracy curves, ETA, GPU · CPU · RAM metrics.", glyph: "M3 12h4l2 6 4-12 2 6h6" },
+    { tag: "Stage 04", label: "Results", color: "#FFB703", blurb: "Confusion matrix, per-class precision / recall / F1, PR curves.", glyph: "M3 5h18 M3 12h18 M3 19h18 M9 5v14" },
+    { tag: "Stage 05", label: "Inference", color: "#40B5AD", blurb: "Drop in an image, get a live prediction from the running model.", glyph: "M12 3l2.4 5.6L20 11l-5.6 2.4L12 19l-2.4-5.6L4 11l5.6-2.4z" },
+    { tag: "Stage 06", label: "Grad-CAM", color: "#DC143C", blurb: "Heatmaps over what the model actually attends to.", glyph: "M12 22c4-3 7-7 7-11a7 7 0 1 0-14 0c0 4 3 8 7 11z M12 12a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" },
+    { tag: "Stage 07", label: "Compare", color: "#708090", blurb: "Overlay two runs, diff configs, per-class delta table.", glyph: "M8 3v18 M16 3v18 M3 8h5 M16 8h5 M3 16h5 M16 16h5" },
+    { tag: "Stage 08", label: "History", color: "#5C6BC0", blurb: "Every run, when it ran, its metrics — click to open, rename freely.", glyph: "M12 8v4l3 3 M12 3a9 9 0 1 0 9 9" }
+  ];
+
+  var grid = document.getElementById("stage-grid");
+  STAGES.forEach(function (s) {
+    var card = document.createElement("div");
+    card.className = "card";
+    card.innerHTML =
+      '<span class="rail" style="background:' + s.color + '"></span>' +
+      '<svg class="glyph" viewBox="0 0 24 24" fill="none" stroke="' + s.color + '" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="' + s.glyph + '"/></svg>' +
+      '<div class="tag" style="color:' + s.color + '">' + s.tag + '</div>' +
+      '<h3>' + s.label + '</h3>' +
+      '<p>' + s.blurb + '</p>';
+    grid.appendChild(card);
+  });
+</script>
+</body>
+</html>
