@@ -52,20 +52,28 @@ a network connection, that's what Reticus is for.
 
 ## Install
 
+A PyPI release is coming. Until then, clone the repo and install from source:
+
+```bash
+git clone https://github.com/shamanshetty/Reticus.git && cd Reticus
+```
+
 Core (logging + metrics only - tiny, just numpy + Pillow):
 ```bash
-pip install reticus
+pip install .
 ```
 
 With the local dashboard (FastAPI server):
 ```bash
-pip install "reticus[dashboard]"
+pip install ".[dashboard]"
 ```
 
 Everything (dashboard + torch Grad-CAM):
 ```bash
-pip install "reticus[all]"
+pip install ".[all]"
 ```
+
+For development, add `-e` (for example `pip install -e ".[all]"`).
 
 | Extra | Adds | Use when |
 |---|---|---|

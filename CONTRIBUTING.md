@@ -9,7 +9,7 @@ speculative features.
 Open an issue with:
 - What you ran (a minimal script reproducing the issue, if possible)
 - What you expected vs. what happened
-- Your OS, Python version, and which extras you installed (`pip install "reticus[?]"`)
+- Your OS, Python version, and which extras you installed (`pip install ".[?]"` or `pip install -e ".[?]"`)
 - Any traceback, in full
 
 ## Requesting a feature

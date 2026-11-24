@@ -25,5 +25,5 @@ paste the full traceback here, if any
 **Environment**
 - OS: [e.g. Windows 11, Ubuntu 22.04, macOS 14]
 - Python version: [e.g. 3.11.4]
-- Reticus install: [`pip install reticus`, `reticus[dashboard]`, `reticus[all]`, or editable install]
+- Reticus install: [`pip install .`, `pip install ".[dashboard]"`, `pip install ".[all]"`, or editable (`pip install -e ...`)]
 - Task: [classification / object detection]
