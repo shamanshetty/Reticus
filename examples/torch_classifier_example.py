@@ -1,5 +1,5 @@
 """
-Torch classifier example - requires `pip install "reticus[all]"` (or `[torch]`).
+Torch classifier example - requires `pip install ".[all]"` (or `".[torch]"`) from a source checkout.
 
 The other two examples (classification_example.py, od_example.py) are
 deliberately dependency-light and never touch torch. This one demonstrates
